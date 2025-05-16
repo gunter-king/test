@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>SPA 로그인</title>
+  <style>
+    body {
+      font-family: Arial;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f0f0f0;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .small-btn {
+      font-size: 0.9em;
+      background: none;
+      border: none;
+      color: #007BFF;
+      cursor: pointer;
+    }
+    .error {
+      color: red;
+      font-size: 0.85em;
+    }
+    #mainPage img {
+      width: 200px;
+      height: auto;
+    }
+    .hidden {
+      display: none;
+    }
+    .info {
+      font-size: 0.8em;
+      color: #888;
+      margin-top: -5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- 로그인 화면 -->
+  <div id="loginPage">
+    <h2>로그인</h2>
+    <input type="text" id="loginId" placeholder="아이디">
+    <input type="password" id="loginPw" placeholder="비밀번호">
+    <div class="error" id="loginError"></div>
+    <button onclick="handleLogin()">로그인</button>
+    <button class="small-btn" onclick="switchPage('signupPage')">회원가입</button>
+  </div>
+
+  <!-- 회원가입 화면 -->
+  <div id="signupPage" class="hidden">
+    <h2>회원가입</h2>
+    <input type="text" id="newId" placeholder="아이디">
+    <div class="error" id="idError"></div>
+    <input type="password" id="newPw" placeholder="비밀번호 (8자 이상, 특수문자 포함)">
+    <div class="error" id="pwError"></div>
+    <button onclick="register()">가입하기</button>
+    <button class="small-btn" onclick="switchPage('loginPage')">← 로그인으로 돌아가기</button>
+  </div>
+
+  <!-- 메인 화면 -->
+  <div id="mainPage" class="hidden">
+    <h2>메인 화면</h2>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Emperor_Penguin_Manchot_empereur.jpg/300px-Emperor_Penguin_Manchot_empereur.jpg" alt="펭귄 이미지">
+  </div>
+</div>
+
+<script>
+  // 사용자 데이터 저장
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+
+  function switchPage(pageId) {
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('signupPage').classList.add('hidden');
+    document.getElementById('mainPage').classList.add('hidden');
+    document.getElementById(pageId).classList.remove('hidden');
+  }
+
+  function handleLogin() {
+    const id = document.getElementById('loginId').value.trim();
+    const pw = document.getElementById('loginPw').value.trim();
+    const error = document.getElementById('loginError');
+
+    const found = users.find(user => user.id === id && user.pw === pw);
+
+    if (found) {
+      switchPage('mainPage');
+    } else {
+      error.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+    }
+  }
+
+  function register() {
+    const id = document.getElementById('newId').value.trim();
+    const pw = document.getElementById('newPw').value.trim();
+    const idError = document.getElementById('idError');
+    const pwError = document.getElementById('pwError');
+
+    idError.textContent = '';
+    pwError.textContent = '';
+
+    if (users.some(user => user.id === id)) {
+      idError.textContent = '이미 사용 중인 아이디입니다.';
+      return;
+    }
+
+    const isPwValid = pw.length >= 8 && /[!@#$%^&*]/.test(pw);
+    if (!isPwValid) {
+      pwError.textContent = '비밀번호는 8자 이상, 특수문자를 포함해야 합니다.';
+      return;
+    }
+
+    users.push({ id, pw });
+    localStorage.setItem('users', JSON.stringify(users));
+    alert('회원가입 완료! 로그인 해주세요.');
+    switchPage('loginPage');
+  }
+
+  // 복붙 방지 적용
+  function disablePasteCutCopy(inputId) {
+    const input = document.getElementById(inputId);
+    input.addEventListener('paste', e => {
+      e.preventDefault();
+      alert('붙여넣기는 허용되지 않습니다.');
+    });
+    input.addEventListener('copy', e => e.preventDefault());
+    input.addEventListener('cut', e => e.preventDefault());
+  }
+
+  // 로그인/회원가입 비밀번호 칸에 적용
+  disablePasteCutCopy('loginPw');
+  disablePasteCutCopy('newPw');
+</script>
+
+</body>
+</html>
